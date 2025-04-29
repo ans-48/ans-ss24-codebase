@@ -31,6 +31,21 @@ class NetworkTopo(Topo):
         Topo.__init__(self)
 
         # Build the specified network topology here
+        s1, s2, s3 = [ self.addSwitch(s) for s in ('s1', 's2', 's3') ]
+        self.addLink(s1, s3, cls=TCLink, bw=15, delay=10, params2={'ip': '10.0.1.1/24'})
+        self.addLink(s2, s3, cls=TCLink, bw=15, delay=10, params2={'ip': '10.0.2.1/24'})
+
+        ext = self.addHost('ext', ip='192.168.1.123/24', defaultRoute='via 192.168.1.1')
+        self.addLink(ext, s3, cls=TCLink, bw=15, delay=10, params2={'ip': '192.168.1.1/24'})
+
+        h1 = self.addHost('h1', ip='10.0.1.2/24', defaultRoute='via 10.0.1.1')
+        h2 = self.addHost('h2', ip='10.0.1.3/24', defaultRoute='via 10.0.1.1')
+        ser = self.addHost('ser', ip='10.0.2.2/24', defaultRoute='via 10.0.2.1')
+
+        self.addLink(s1, h1, cls=TCLink, bw=15, delay=10)
+        self.addLink(s1, h2, cls=TCLink, bw=15, delay=10)
+        self.addLink(s2, ser, cls=TCLink, bw=15, delay=10)
+
 
 def run():
     topo = NetworkTopo()
