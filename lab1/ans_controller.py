@@ -377,6 +377,16 @@ class LearningSwitch(app_manager.RyuApp):
 
         src_mac = self.port_to_own_mac[out_port]
 
+        match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IP, ipv4_dst=dst_ip)
+
+        actions = [
+            parser.OFPActionDecNwTtl(),
+            parser.OFPActionSetField(eth_src=src_mac),
+            parser.OFPActionSetField(eth_dst=dst_mac),
+            parser.OFPActionOutput(out_port)
+        ]
+        self.add_flow(datapath, 10, match, actions)
+
         # Rebuild Ethernet frame with updated MACs
         new_eth = ethernet.ethernet(dst=dst_mac, src=src_mac, ethertype=eth_pkt.ethertype)
 
@@ -386,7 +396,6 @@ class LearningSwitch(app_manager.RyuApp):
         out_pkt.add_protocol(ip_pkt)
         out_pkt.serialize()
 
-        actions = [parser.OFPActionOutput(out_port)]
 
         out_msg = parser.OFPPacketOut(
             datapath=datapath,
