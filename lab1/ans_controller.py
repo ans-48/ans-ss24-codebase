@@ -72,6 +72,8 @@ class LearningSwitch(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
+        if dpid == self.S3_DPID:
+            self.install_router_base_rules(datapath)
 
             
     def add_flow(self, datapath, priority, match, actions):
@@ -81,6 +83,8 @@ class LearningSwitch(app_manager.RyuApp):
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                 match=match, instructions=inst)
         datapath.send_msg(mod)
+        
+        
 
     def install_router_base_rules(self, datapath):
         parser = datapath.ofproto_parser
@@ -146,7 +150,6 @@ class LearningSwitch(app_manager.RyuApp):
         if dpid == self.S1_DPID or dpid == self.S2_DPID:
             self.handle_switch_packet(datapath, msg, in_port, pkt, eth)
         elif dpid == self.S3_DPID:
-            self.install_router_base_rules(datapath)
             self.handle_router_packet(datapath, msg, in_port, pkt, eth)
         else:
             self.logger.info(f"Packet-in from unknown DPID {dpid:x}. Performing basic L2 learning.")

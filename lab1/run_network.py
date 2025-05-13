@@ -39,9 +39,9 @@ class NetworkTopo(Topo):
         self.addLink(h1, s1, **link_opts)
         self.addLink(h2, s1, **link_opts)
         self.addLink(ser, s2, **link_opts)
-        self.addLink(s1, s3, port1=3, port2=1, **link_opts)
-        self.addLink(s2, s3, port1=2, port2=2, **link_opts)
-        self.addLink(ext, s3, port1=1, port2=3, **link_opts)
+        self.addLink(s1, s3, **link_opts)
+        self.addLink(s2, s3, **link_opts)
+        self.addLink(ext, s3, **link_opts)
 
 def run():
     topo = NetworkTopo()
