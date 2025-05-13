@@ -1,4 +1,20 @@
-#!/usr/bin/env python3
+"""
+ Copyright 2024 Computer Networks Group @ UPB
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ """
+
+#!/bin/env python3
 
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSKernelSwitch
@@ -7,7 +23,7 @@ from mininet.log import setLogLevel, info
 from mininet.link import TCLink
 from mininet.topo import Topo
 
-class Lab1Topo(Topo):
+class NetworkTopo(Topo):
     def build(self, **_opts):
         h1 = self.addHost('h1', ip='10.0.1.2/24', defaultRoute='via 10.0.1.1')
         h2 = self.addHost('h2', ip='10.0.1.3/24', defaultRoute='via 10.0.1.1')
@@ -27,31 +43,21 @@ class Lab1Topo(Topo):
         self.addLink(s2, s3, port1=2, port2=2, **link_opts)
         self.addLink(ext, s3, port1=1, port2=3, **link_opts)
 
-def run_lab_network():
-    info('* Starting network creation *\n')
-    
-    info('--- Defining Controller (Ryu expected at 127.0.0.1:6653)...\n')
-    c1 = RemoteController(name='c1', ip='127.0.0.1', port=6653)
-
-    lab_topo = Lab1Topo()
-
-    info('--- Creating Mininet object with OVS switches and TC links...\n')
-    net = Mininet(topo=lab_topo,
-                  controller=c1,
+def run():
+    topo = NetworkTopo()
+    net = Mininet(topo=topo,
                   switch=OVSKernelSwitch,
                   link=TCLink,
-                  autoSetMacs=True,
-                  autoStaticArp=False)
-
-    info('* Building network simulation *\n')
-    net.start() 
-
-    info('* Running Mininet CLI (type "exit" to quit) *\n')
+                  controller=None)
+    net.addController(
+        'c1', 
+        controller=RemoteController, 
+        ip="127.0.0.1", 
+        port=6653)
+    net.start()
     CLI(net)
-
-    info('* Stopping network simulation *\n')
     net.stop()
 
 if __name__ == '__main__':
     setLogLevel('info')
-    run_lab_network()
+    run()
