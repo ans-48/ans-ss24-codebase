@@ -31,21 +31,29 @@ class NetworkTopo(Topo):
         Topo.__init__(self)
 
         # Build the specified network topology here
-        s1, s2, s3 = [ self.addSwitch(s) for s in ('s1', 's2', 's3') ]
-        self.addLink(s1, s3, cls=TCLink, bw=15, delay=10, params2={'ip': '10.0.1.1/24'})
-        self.addLink(s2, s3, cls=TCLink, bw=15, delay=10, params2={'ip': '10.0.2.1/24'})
 
-        ext = self.addHost('ext', ip='192.168.1.123/24', defaultRoute='via 192.168.1.1')
-        self.addLink(ext, s3, cls=TCLink, bw=15, delay=10, params2={'ip': '192.168.1.1/24'})
-
+        # Add hosts with IPs and default routes
         h1 = self.addHost('h1', ip='10.0.1.2/24', defaultRoute='via 10.0.1.1')
         h2 = self.addHost('h2', ip='10.0.1.3/24', defaultRoute='via 10.0.1.1')
         ser = self.addHost('ser', ip='10.0.2.2/24', defaultRoute='via 10.0.2.1')
+        ext = self.addHost('ext', ip='192.168.1.123/24', defaultRoute='via 192.168.1.1')
 
-        self.addLink(s1, h1, cls=TCLink, bw=15, delay=10)
-        self.addLink(s1, h2, cls=TCLink, bw=15, delay=10)
-        self.addLink(s2, ser, cls=TCLink, bw=15, delay=10)
+        # Add switches
+        s1 = self.addSwitch('s1')  # for h1 and h2
+        s2 = self.addSwitch('s2')  # for ser
+        s3 = self.addSwitch('s3')  # acts as router / interconnect
 
+        link_opts = {'bw': 15, 'delay': '10ms'}
+
+        # Add links: hosts to edge switches
+        self.addLink(h1, s1, **link_opts)
+        self.addLink(h2, s1, **link_opts)
+        self.addLink(ser, s2, **link_opts)
+        self.addLink(ext, s3, port1=1, port2=3, **link_opts)
+
+        # Add links: edge switches to "router"
+        self.addLink(s1, s3, port1=3, port2=1, **link_opts)
+        self.addLink(s2, s3, port1=2, port2=2, **link_opts)
 
 def run():
     topo = NetworkTopo()
